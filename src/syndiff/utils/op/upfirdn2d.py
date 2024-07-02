@@ -14,14 +14,17 @@ from torch.autograd import Function
 from torch.utils.cpp_extension import load
 from collections import abc
 
-module_path = os.path.dirname(__file__)
-upfirdn2d_op = load(
-    "upfirdn2d",
-    sources=[
-        os.path.join(module_path, "upfirdn2d.cpp"),
-        os.path.join(module_path, "upfirdn2d_kernel.cu"),
-    ],
-)
+import upfirdn2d_op
+
+#module_path = os.path.dirname(__file__)
+#upfirdn2d_op = load(
+#    "upfirdn2d",
+#    sources=[
+#        os.path.join(module_path, "upfirdn2d.cpp"),
+#        os.path.join(module_path, "upfirdn2d_kernel.cu"),
+#    ],
+#    extra_ldflags=["/LIBPATH:C:\\Users\\lloyd\\Python310\\libs"],
+#)
 
 
 class UpFirDn2dBackward(Function):

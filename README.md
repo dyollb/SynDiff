@@ -24,7 +24,10 @@ python3.x-dev (apt install, x should match your python3 version, ex: 3.8)
 ```bash
 git clone https://github.com/icon-lab/SynDiff
 cd SynDiff
+pip install .
 ```
+
+To build using the same pytorch version (e.g. with CUDA support) either the version specified in the [`pyproject.toml`](pyproject.toml), or install pytorch first and then install `syndiff` by calling: `pip install . --no-build-isolation`.
 
 ## Dataset
 You should structure your aligned dataset in the following way:

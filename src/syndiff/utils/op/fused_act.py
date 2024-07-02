@@ -15,15 +15,18 @@ from torch.autograd import Function
 from torch.utils.cpp_extension import load
 
 
-module_path = os.path.dirname(__file__)
-print("module_path = {}".format(module_path))
-fused = load(
-    "fused",
-    sources=[
-        os.path.join(module_path, "fused_bias_act.cpp"),
-        os.path.join(module_path, "fused_bias_act_kernel.cu"),
-    ],
-)
+import fused
+
+# module_path = os.path.dirname(__file__)
+# print("module_path = {}".format(module_path))
+# fused = load(
+#     "fused",
+#     sources=[
+#         os.path.join(module_path, "fused_bias_act.cpp"),
+#         os.path.join(module_path, "fused_bias_act_kernel.cu"),
+#     ],
+#     extra_ldflags=["/LIBPATH:C:\\Users\\lloyd\\Python310\\libs"],
+# )
 
 
 class FusedLeakyReLUFunctionBackward(Function):

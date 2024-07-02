@@ -1,17 +1,18 @@
 
 import argparse
 import torch
-import numpy as np, h5py
+import numpy as np
+import h5py
 
 import os
 import torch.optim as optim
-import torchvision
-from backbones.ncsnpp_generator_adagn import NCSNpp
-from dataset import CreateDatasetSynthesis
-
 import torch.nn.functional as F
-
+import torchvision
 import torchvision.transforms as transforms
+
+
+from .backbones.ncsnpp_generator_adagn import NCSNpp
+from .dataset import CreateDatasetSynthesis
 
 def psnr(img1, img2):
     #Peak Signal to Noise Ratio
@@ -20,7 +21,7 @@ def psnr(img1, img2):
     return 20 * torch.log10(img1.max() / torch.sqrt(mse))
 
         
-#%% Diffusion coefficients 
+# Diffusion coefficients 
 def var_func_vp(t, beta_min, beta_max):
     log_mean_coeff = -0.25 * t ** 2 * (beta_max - beta_min) - 0.5 * t * beta_min
     var = 1. - torch.exp(2. * log_mean_coeff)
@@ -68,7 +69,7 @@ def get_sigma_schedule(args, device):
     a_s = torch.sqrt(1-betas)
     return sigmas, a_s, betas
 
-#%% posterior sampling
+# posterior sampling
 class Posterior_Coefficients():
     def __init__(self, args, device):
         
@@ -144,7 +145,7 @@ def load_checkpoint(checkpoint_dir, netG, name_of_network, epoch,device = 'cuda:
          ckpt[key[7:]] = ckpt.pop(key)
     netG.load_state_dict(ckpt)
     netG.eval()
-#%%
+#
 def sample_and_test(args):
     torch.manual_seed(42)
     # device = 'cuda:0'
@@ -180,7 +181,7 @@ def sample_and_test(args):
          
     save_dir = exp_path + "/generated_samples/epoch_{}".format(epoch_chosen)
     
-    crop = transforms.CenterCrop((256, 152))
+    crop = transforms.CenterCrop((256, 256))
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     loss1 = np.zeros((1,len(data_loader)))
@@ -189,6 +190,7 @@ def sample_and_test(args):
     syn_im2=np.zeros((256,256,len(data_loader)))
     for iteration, (x , y) in enumerate(data_loader): 
         
+        print(x.shape)
         real_data = x.to(device, non_blocking=True)
         source_data = y.to(device, non_blocking=True)
         
@@ -249,7 +251,7 @@ def sample_and_test(args):
     f.close()
             
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser('syndiff parameters')
     parser.add_argument('--seed', type=int, default=1024,
                         help='seed used for initialization')
@@ -305,7 +307,7 @@ if __name__ == '__main__':
                             help='scale of fourier transform')
     parser.add_argument('--not_use_tanh', action='store_true',default=False)
     
-    #geenrator and training
+    #generator and training
     parser.add_argument('--exp', default='ixi_synth', help='name of experiment')
     parser.add_argument('--input_path', help='path to input data')
     parser.add_argument('--output_path', help='path to output saves')
@@ -322,7 +324,7 @@ if __name__ == '__main__':
     parser.add_argument('--t_emb_dim', type=int, default=256)
     parser.add_argument('--batch_size', type=int, default=1, help='sample generating batch size')
     
-    #optimizaer parameters    
+    #optimizer parameters    
     parser.add_argument('--lr_g', type=float, default=1.5e-4, help='learning rate g')
     parser.add_argument('--beta1', type=float, default=0.5,
                             help='beta1 for adam')
@@ -342,3 +344,6 @@ if __name__ == '__main__':
     
     sample_and_test(args)
     
+    
+if __name__ == '__main__':
+    main()
