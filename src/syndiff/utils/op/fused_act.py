@@ -6,24 +6,12 @@
 The license for the original version of this file can be found in this directory (LICENSE_MIT).
 """
 
-import os
 
+import fused
 import torch
 from torch import nn
-from torch.nn import functional as F
 from torch.autograd import Function
-from torch.utils.cpp_extension import load
-
-
-module_path = os.path.dirname(__file__)
-print("module_path = {}".format(module_path))
-fused = load(
-    "fused",
-    sources=[
-        os.path.join(module_path, "fused_bias_act.cpp"),
-        os.path.join(module_path, "fused_bias_act_kernel.cu"),
-    ],
-)
+from torch.nn import functional as F
 
 
 class FusedLeakyReLUFunctionBackward(Function):
@@ -50,7 +38,7 @@ class FusedLeakyReLUFunctionBackward(Function):
 
     @staticmethod
     def backward(ctx, gradgrad_input, gradgrad_bias):
-        out, = ctx.saved_tensors
+        (out,) = ctx.saved_tensors
         gradgrad_out = fused.fused_bias_act(
             gradgrad_input, gradgrad_bias, out, 3, 1, ctx.negative_slope, ctx.scale
         )
@@ -71,7 +59,7 @@ class FusedLeakyReLUFunction(Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        out, = ctx.saved_tensors
+        (out,) = ctx.saved_tensors
 
         grad_input, grad_bias = FusedLeakyReLUFunctionBackward.apply(
             grad_output, out, ctx.negative_slope, ctx.scale
@@ -81,7 +69,7 @@ class FusedLeakyReLUFunction(Function):
 
 
 class FusedLeakyReLU(nn.Module):
-    def __init__(self, channel, negative_slope=0.2, scale=2 ** 0.5):
+    def __init__(self, channel, negative_slope=0.2, scale=2**0.5):
         super().__init__()
 
         self.bias = nn.Parameter(torch.zeros(channel))
@@ -92,7 +80,7 @@ class FusedLeakyReLU(nn.Module):
         return fused_leaky_relu(input, self.bias, self.negative_slope, self.scale)
 
 
-def fused_leaky_relu(input, bias, negative_slope=0.2, scale=2 ** 0.5):
+def fused_leaky_relu(input, bias, negative_slope=0.2, scale=2**0.5):
     if input.device.type == "cpu":
         rest_dim = [1] * (input.ndim - bias.ndim - 1)
         return (

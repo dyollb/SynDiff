@@ -11,15 +11,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
-
 import torchvision.transforms as transforms
-from dataset import CreateDatasetSynthesis
 
 from torch.multiprocessing import Process
 import torch.distributed as dist
 import shutil
 from skimage.metrics import peak_signal_noise_ratio as psnr
 
+from .dataset import CreateDatasetSynthesis
 
 
 def copy_source(file, output_dir):
@@ -30,7 +29,7 @@ def broadcast_params(params):
         dist.broadcast(param.data, src=0)
 
 
-#%% Diffusion coefficients 
+# Diffusion coefficients 
 def var_func_vp(t, beta_min, beta_max):
     log_mean_coeff = -0.25 * t ** 2 * (beta_max - beta_min) - 0.5 * t * beta_min
     var = 1. - torch.exp(2. * log_mean_coeff)
@@ -116,7 +115,9 @@ def q_sample_pairs(coeff, x_start, t):
                    extract(coeff.sigmas, t+1, x_start.shape) * noise
     
     return x_t, x_t_plus_one
-#%% posterior sampling
+
+
+# posterior sampling
 class Posterior_Coefficients():
     def __init__(self, args, device):
         
@@ -181,18 +182,19 @@ def sample_from_model(coefficients, generator, n_time, x_init, T, opt):
         
     return x
 
-#%%
+#
 def train_syndiff(rank, gpu, args):
 
     
-    from backbones.discriminator import Discriminator_small, Discriminator_large
+    from .backbones.discriminator import Discriminator_small, Discriminator_large
     
-    from backbones.ncsnpp_generator_adagn import NCSNpp
+    from .backbones.ncsnpp_generator_adagn import NCSNpp
     
-    import backbones.generator_resnet 
+    #import .backbones.generator_resnet 
+    from .backbones import generator_resnet 
     
     
-    from utils.EMA import EMA
+    from .utils.EMA import EMA
     
     #rank = args.node_rank * args.num_process_per_node + gpu
     
@@ -243,8 +245,8 @@ def train_syndiff(rank, gpu, args):
     gen_diffusive_2 = NCSNpp(args).to(device)  
     #networks performing translation
     args.num_channels=1
-    gen_non_diffusive_1to2 = backbones.generator_resnet.define_G(netG='resnet_6blocks',gpu_ids=[gpu])
-    gen_non_diffusive_2to1 = backbones.generator_resnet.define_G(netG='resnet_6blocks',gpu_ids=[gpu])
+    gen_non_diffusive_1to2 = generator_resnet.define_G(netG='resnet_6blocks',gpu_ids=[gpu])
+    gen_non_diffusive_2to1 = generator_resnet.define_G(netG='resnet_6blocks',gpu_ids=[gpu])
     
     disc_diffusive_1 = Discriminator_large(nc = 2, ngf = args.ngf, 
                                    t_emb_dim = args.t_emb_dim,
@@ -253,8 +255,8 @@ def train_syndiff(rank, gpu, args):
                                    t_emb_dim = args.t_emb_dim,
                                    act=nn.LeakyReLU(0.2)).to(device)
     
-    disc_non_diffusive_cycle1 = backbones.generator_resnet.define_D(gpu_ids=[gpu])
-    disc_non_diffusive_cycle2 = backbones.generator_resnet.define_D(gpu_ids=[gpu])
+    disc_non_diffusive_cycle1 = generator_resnet.define_D(gpu_ids=[gpu])
+    disc_non_diffusive_cycle2 = generator_resnet.define_D(gpu_ids=[gpu])
     
     broadcast_params(gen_diffusive_1.parameters())
     broadcast_params(gen_diffusive_2.parameters())
@@ -727,8 +729,9 @@ def init_processes(rank, size, fn, args):
 
 def cleanup():
     dist.destroy_process_group()    
-#%%
-if __name__ == '__main__':
+
+
+def main():
     parser = argparse.ArgumentParser('syndiff parameters')
     parser.add_argument('--seed', type=int, default=1024,
                         help='seed used for initialization')
@@ -859,3 +862,7 @@ if __name__ == '__main__':
     else:
         
         init_processes(0, size, train_syndiff, args)
+
+
+if __name__ == '__main__':
+    main()
