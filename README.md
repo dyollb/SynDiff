@@ -20,7 +20,9 @@ python3.x-dev (apt install, x should match your python3 version, ex: 3.8)
 ```
 
 ## Installation
+
 - Clone this repo:
+
 ```bash
 git clone https://github.com/icon-lab/SynDiff
 cd SynDiff
@@ -30,9 +32,8 @@ pip install .
 To build using the same pytorch version (e.g. with CUDA support) either the version specified in the [`pyproject.toml`](pyproject.toml), or install pytorch first and then install `syndiff` by calling: `pip install . --no-build-isolation`.
 
 ## Dataset
+
 You should structure your aligned dataset in the following way:
-
-
 
 ```
 input_path/
@@ -44,11 +45,11 @@ input_path/
   ├── data_test_contrast2.mat
 ```
 
-where .mat files has shape of (#images, width, height) and image values are between 0 and 1.0. 
+where .mat files has shape of (#images, width, height) and image values are between 0 and 1.0.
+
 ### Sample Data
-Sample toy data can also found under 'SynDiff_sample_data' folder of the repository. 
 
-
+Sample toy data can also found under 'SynDiff_sample_data' folder of the repository.
 
 ## Train
 
@@ -61,6 +62,7 @@ python3 train.py --image_size 256 --exp exp_syndiff --num_channels 2 --num_chann
 <br />
 
 ## Pretrained Models
+
 We have released pretrained diffusive generators for [T1->PD and PD->T1](https://drive.google.com/file/d/1Hfvnz29NaTFqPMX6RGaEv4Qnt8HeoxZz/view?usp=sharing) tasks in IXI and [T1->T2 and T2->T1](https://drive.google.com/file/d/1zGzZPVY-Xp2Flc7GicOD7s4taxcjwCsn/view?usp=sharing) tasks in BRATS datasets. You can save these weights in relevant checkpoints folder and perform inference.
 
 ## Test
@@ -71,16 +73,23 @@ We have released pretrained diffusive generators for [T1->PD and PD->T1](https:/
 python test.py --image_size 256 --exp exp_syndiff --num_channels 2 --num_channels_dae 64 --ch_mult 1 1 2 2 4 4 --num_timesteps 4 --num_res_blocks 2 --batch_size 1 --embedding_type positional  --z_emb_dim 256 --contrast1 T1  --contrast2 T2 --which_epoch 50 --gpu_chose 0 --input_path /input/path/for/data --output_path /output/for/results
 ```
 
-<br />
-<br />
+Or using the `syndiff-test` command on the sample data:
 
+```
+syndiff-test --image_size 256 --exp exp_syndiff --num_channels 2 --num_channels_dae 64 --ch_mult 1 1 2 2 4 4 --num_timesteps 4 --num_res_blocks 2 --batch_size 1 --embedding_type positional  --z_emb_dim 256 --contrast1 T1  --contrast2 T2 --which_epoch 50 --gpu_chose 0 --input_path .\SynDiff_sample_data --output_path .\checkpoints --exp Brats_T1_T2
+```
+
+<br />
+<br />
 
 # Citation
+
 Preliminary versions of SynDiff are presented in [NeurIPS Medical Imaging Meets](https://www.cse.cuhk.edu.hk/~qdou/public/medneurips2022/105.pdf) and IEEE ISBI 2023.
 You are encouraged to modify/distribute this code. However, please acknowledge this code and cite the paper appropriately.
+
 ```
 @misc{özbey2023unsupervised,
-      title={Unsupervised Medical Image Translation with Adversarial Diffusion Models}, 
+      title={Unsupervised Medical Image Translation with Adversarial Diffusion Models},
       author={Muzaffer Özbey and Onat Dalmaz and Salman UH Dar and Hasan A Bedel and Şaban Özturk and Alper Güngör and Tolga Çukur},
       year={2023},
       eprint={2207.08208},
@@ -89,7 +98,8 @@ You are encouraged to modify/distribute this code. However, please acknowledge t
 }
 
 ```
-For any questions, comments and contributions, please contact Muzaffer Özbey (muzafferozbey94[at]gmail.com ) <br />
+
+For any questions, comments and contributions, please contact Muzaffer Özbey (muzafferozbey94\[at\]gmail.com ) <br />
 
 (c) ICON Lab 2022
 
