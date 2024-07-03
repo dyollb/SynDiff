@@ -10,13 +10,12 @@ Muzaffer Özbey, Onat Dalmaz, Salman UH Dar, Hasan A Bedel, Şaban Özturk, Alpe
 
 ## Dependencies
 
+To install pytorch with CUDA support, check the [get started](https://pytorch.org/get-started/locally/) page.
+
 ```
-python>=3.6.9
+python>=3.9
 torch>=1.7.1
 torchvision>=0.8.2
-cuda=>11.2
-ninja
-python3.x-dev (apt install, x should match your python3 version, ex: 3.8)
 ```
 
 ## Installation
